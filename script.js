@@ -1,57 +1,72 @@
 // ===============================
-// SPLASH SCREEN
+// 1. SPLASH SCREEN
 // ===============================
-
-window.addEventListener("load", function(){
-
+window.addEventListener("load", () => {
     const splash = document.getElementById("splash");
 
-    setTimeout(function(){
-        splash.classList.add("hide");
-    }, 2600);
-
+    if (splash) {
+        setTimeout(() => {
+            splash.classList.add("hide");
+            
+            // Boa prática: Remove o splash do HTML após a animação (1s) 
+            // para não atrapalhar cliques invisíveis na tela
+            setTimeout(() => splash.remove(), 1000); 
+        }, 2600);
+    }
 });
 
-
 // ===============================
-// LOGO SUAVE
+// 2. LOGO SUAVE AO CARREGAR
 // ===============================
-
-document.addEventListener("DOMContentLoaded", function(){
-
+document.addEventListener("DOMContentLoaded", () => {
     const logoTopo = document.querySelector(".logo-topo img");
 
-    if(logoTopo){
+    if (logoTopo) {
+        // Estado inicial
         logoTopo.style.opacity = "0";
         logoTopo.style.transform = "translateY(-15px)";
         logoTopo.style.transition = "all 1.2s ease";
 
-        setTimeout(function(){
+        // Anima após um breve momento
+        setTimeout(() => {
             logoTopo.style.opacity = "0.95";
             logoTopo.style.transform = "translateY(0)";
         }, 300);
     }
-
 });
 
-
 // ===============================
-// ANIMAÇÃO DOS CARDS AO ROLAR
+// 3. ANIMAÇÃO DOS CARDS (Alta Performance)
 // ===============================
-
-window.addEventListener("scroll", function(){
-
+document.addEventListener("DOMContentLoaded", () => {
     const cards = document.querySelectorAll(".card-estudo");
 
-    cards.forEach(function(card){
-
-        const cardTop = card.getBoundingClientRect().top;
-        const windowHeight = window.innerHeight;
-
-        if(cardTop < windowHeight - 100){
-            card.classList.add("show");
-        }
-
+    // Configuração do Observador (Avisa quando o elemento aparece na tela)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            // Se o card entrou na tela...
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = "1";
+                entry.target.style.transform = "translateY(0)";
+                
+                // Para de observar o card depois que ele já apareceu uma vez
+                observer.unobserve(entry.target); 
+            }
+        });
+    }, {
+        threshold: 0.1, // Dispara quando 10% do card estiver visível
+        rootMargin: "0px 0px -20px 0px"
     });
 
+    // Prepara cada card antes de ser observado
+    cards.forEach(card => {
+        // Esconde o card no JS (Progressive Enhancement)
+        // Se o JS falhar, o CSS normal garante que o card continue visível
+        card.style.opacity = "0";
+        card.style.transform = "translateY(20px)";
+        card.style.transition = "all 0.6s ease-out";
+        
+        // Começa a observar
+        observer.observe(card);
+    });
 });
